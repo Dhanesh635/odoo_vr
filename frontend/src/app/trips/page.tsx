@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Button, Card, ConfirmDialog, PageTransition, PageSection } from "@/components/ui";
 import TripCompleteModal from "@/components/trips/TripCompleteModal";
 import TripDetailsDrawer from "@/components/trips/TripDetailsDrawer";
@@ -19,6 +19,22 @@ import type {
   TripSortKey,
   TripStatus,
 } from "@/types/trip";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  fetchTrips,
+  createTrip,
+  updateTrip,
+  dispatchTrip,
+  completeTrip,
+  cancelTrip,
+  deleteTrip,
+  shouldFetchTrips
+} from "@/store/slices/tripSlice";
+import {
+  selectTripList,
+  selectTripLoading,
+  selectTripLastFetched
+} from "@/store/selectors/tripSelectors";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -49,6 +65,21 @@ export default function TripsPage() {
   const [trips, setTrips] = useState<Trip[]>(mockTrips);
   const [filters, setFilters] = useState<TripFiltersState>(initialFilters);
 
+  const dispatch = useAppDispatch();
+  const reduxTrips = useAppSelector(selectTripList);
+  const isLoading = useAppSelector(selectTripLoading);
+  const lastFetched = useAppSelector(selectTripLastFetched);
+
+  // Fetch trips on mount or when cache is stale
+  useEffect(() => {
+    if (shouldFetchTrips(lastFetched)) {
+      dispatch(fetchTrips());
+    }
+  }, [dispatch, lastFetched]);
+
+  // Use Redux trips if available, otherwise fall back to local state
+  const tripSource = reduxTrips.length > 0 ? reduxTrips : trips;
+
   // Modal/drawer open state
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
@@ -63,7 +94,7 @@ export default function TripsPage() {
   const visibleTrips = useMemo(() => {
     const query = filters.search.trim().toLowerCase();
 
-    return trips
+    return tripSource
       .filter((trip) => {
         const matchesSearch =
           !query ||
@@ -93,7 +124,7 @@ export default function TripsPage() {
             return b.createdAt.localeCompare(a.createdAt);
         }
       });
-  }, [trips, filters]);
+  }, [tripSource, filters]);
 
   // ─── Filter helpers ──────────────────────────────────────────────────────────
 
@@ -189,86 +220,117 @@ export default function TripsPage() {
 
   // ─── Dispatch ────────────────────────────────────────────────────────────────
 
-  function handleDispatchConfirm() {
+  async function handleDispatchConfirm() {
     if (!tripPendingDispatch) return;
-    const dispatchTime = now();
-
-    setTrips((prev) =>
-      prev.map((t) =>
-        t.id === tripPendingDispatch.id
-          ? {
-              ...t,
-              status: "Dispatched" as TripStatus,
-              dispatchedAt: dispatchTime,
-              timeline: t.timeline.map((event) =>
-                event.type === "dispatched"
-                  ? { ...event, timestamp: dispatchTime }
-                  : event,
-              ),
-            }
-          : t,
-      ),
-    );
+    
+    try {
+      await dispatch(dispatchTrip(tripPendingDispatch.id)).unwrap();
+    } catch (error) {
+      console.error('Failed to dispatch trip:', error);
+      // Fallback to local state update if Redux fails
+      const dispatchTime = now();
+      setTrips((prev) =>
+        prev.map((t) =>
+          t.id === tripPendingDispatch.id
+            ? {
+                ...t,
+                status: "Dispatched" as TripStatus,
+                dispatchedAt: dispatchTime,
+                timeline: t.timeline.map((event) =>
+                  event.type === "dispatched"
+                    ? { ...event, timestamp: dispatchTime }
+                    : event,
+                ),
+              }
+            : t,
+        ),
+      );
+    }
 
     setTripPendingDispatch(null);
   }
 
   // ─── Complete ────────────────────────────────────────────────────────────────
 
-  function handleCompleteConfirm(tripId: string, values: TripCompleteFormValues) {
-    const completeTime = now();
-
-    setTrips((prev) =>
-      prev.map((t) =>
-        t.id === tripId
-          ? {
-              ...t,
-              status: "Completed" as TripStatus,
-              completedAt: completeTime,
-              finalOdometer: Number(values.finalOdometer),
-              fuelUsed: Number(values.fuelUsed),
-              deliveryNotes: values.deliveryNotes,
-              timeline: t.timeline.map((event) =>
-                event.type === "reached"
-                  ? { ...event, timestamp: completeTime }
-                  : event.type === "completed"
+  async function handleCompleteConfirm(tripId: string, values: TripCompleteFormValues) {
+    try {
+      await dispatch(completeTrip({
+        id: tripId,
+        payload: {
+          finalOdometerKm: Number(values.finalOdometer),
+          fuelConsumedLiters: Number(values.fuelUsed)
+        }
+      })).unwrap();
+    } catch (error) {
+      console.error('Failed to complete trip:', error);
+      // Fallback to local state update
+      const completeTime = now();
+      setTrips((prev) =>
+        prev.map((t) =>
+          t.id === tripId
+            ? {
+                ...t,
+                status: "Completed" as TripStatus,
+                completedAt: completeTime,
+                finalOdometer: Number(values.finalOdometer),
+                fuelUsed: Number(values.fuelUsed),
+                deliveryNotes: values.deliveryNotes,
+                timeline: t.timeline.map((event) =>
+                  event.type === "reached"
                     ? { ...event, timestamp: completeTime }
-                    : event,
-              ),
-            }
-          : t,
-      ),
-    );
+                    : event.type === "completed"
+                      ? { ...event, timestamp: completeTime }
+                      : event,
+                ),
+              }
+            : t,
+        ),
+      );
+    }
 
     setTripPendingComplete(null);
   }
 
   // ─── Cancel ──────────────────────────────────────────────────────────────────
 
-  function handleCancelConfirm() {
+  async function handleCancelConfirm() {
     if (!tripPendingCancel) return;
-    const cancelTime = now();
-
-    setTrips((prev) =>
-      prev.map((t) =>
-        t.id === tripPendingCancel.id
-          ? {
-              ...t,
-              status: "Cancelled" as TripStatus,
-              cancelledAt: cancelTime,
-            }
-          : t,
-      ),
-    );
+    
+    try {
+      await dispatch(cancelTrip(tripPendingCancel.id)).unwrap();
+    } catch (error) {
+      console.error('Failed to cancel trip:', error);
+      // Fallback to local state update
+      const cancelTime = now();
+      setTrips((prev) =>
+        prev.map((t) =>
+          t.id === tripPendingCancel.id
+            ? {
+                ...t,
+                status: "Cancelled" as TripStatus,
+                cancelledAt: cancelTime,
+              }
+            : t,
+        ),
+      );
+    }
 
     setTripPendingCancel(null);
   }
 
   // ─── Delete ──────────────────────────────────────────────────────────────────
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
     if (!tripPendingDelete) return;
-    setTrips((prev) => prev.filter((t) => t.id !== tripPendingDelete.id));
+    
+    try {
+      await dispatch(deleteTrip(tripPendingDelete.id)).unwrap();
+    } catch (error) {
+      console.error('Failed to delete trip:', error);
+      // Fallback to local state update
+      setTrips((prev) => prev.filter((t) => t.id !== tripPendingDelete.id));
+    }
+    
     setTripPendingDelete(null);
   }
 

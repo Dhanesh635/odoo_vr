@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Button, Card, PageTransition, PageSection } from "@/components/ui";
 import DeleteVehicleDialog from "@/components/vehicles/DeleteVehicleDialog";
 import VehicleDetailsDrawer from "@/components/vehicles/VehicleDetailsDrawer";
@@ -11,6 +11,17 @@ import VehicleFormModal from "@/components/vehicles/VehicleFormModal";
 import VehicleTable from "@/components/vehicles/VehicleTable";
 import { vehicles } from "@/constants/vehicles";
 import type { Vehicle } from "@/types/vehicle";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { 
+  listVehiclesThunk, 
+  createVehicleThunk,
+  updateVehicleThunk,
+  deleteVehicleThunk 
+} from "@/store/slices/vehicleSlice";
+import { 
+  selectVehicleList, 
+  selectVehicleLoading 
+} from "@/store/selectors/vehicleSelectors";
 
 const initialFilters: VehicleFiltersState = {
   search: "",
@@ -27,10 +38,22 @@ export default function FleetPage() {
   const [vehiclePendingDelete, setVehiclePendingDelete] =
     useState<Vehicle | null>(null);
 
+  const dispatch = useAppDispatch();
+  const reduxVehicles = useAppSelector(selectVehicleList);
+  const isLoading = useAppSelector(selectVehicleLoading);
+
+  // Fetch vehicles on mount
+  useEffect(() => {
+    dispatch(listVehiclesThunk());
+  }, [dispatch]);
+
+  // Use Redux vehicles if available, otherwise fall back to constants
+  const vehicleSource = reduxVehicles.length > 0 ? reduxVehicles : vehicles;
+
   const visibleVehicles = useMemo(() => {
     const query = filters.search.trim().toLowerCase();
 
-    return vehicles
+    return vehicleSource
       .filter((vehicle) => {
         const matchesSearch =
           !query ||
@@ -62,7 +85,7 @@ export default function FleetPage() {
             return secondVehicle.createdAt.localeCompare(firstVehicle.createdAt);
         }
       });
-  }, [filters]);
+  }, [filters, vehicleSource]);
 
   function updateFilter<TKey extends keyof VehicleFiltersState>(
     key: TKey,
@@ -84,9 +107,18 @@ export default function FleetPage() {
   function handleVehicleSave() {
     setIsFormOpen(false);
     setEditingVehicle(null);
+    // Refresh vehicle list
+    dispatch(listVehiclesThunk());
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
+    if (vehiclePendingDelete) {
+      try {
+        await dispatch(deleteVehicleThunk(vehiclePendingDelete._id)).unwrap();
+      } catch (error) {
+        console.error('Failed to delete vehicle:', error);
+      }
+    }
     setVehiclePendingDelete(null);
   }
 

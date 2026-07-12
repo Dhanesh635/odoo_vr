@@ -1,9 +1,12 @@
 "use client";
 
-import { FormEvent, ReactNode, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useMemo, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Card, Input, PageTransition, PageSection } from "@/components/ui";
 import { useToast } from "@/components/ui/Toast";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { loginThunk, clearError } from "@/store/slices/authSlice";
+import { selectAuthLoading, selectAuthError, selectIsAuthenticated } from "@/store/selectors/authSelectors";
 
 type LoginFormValues = {
   email: string;
@@ -43,10 +46,40 @@ export default function LoginPage() {
   const [touched, setTouched] = useState<FieldErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   
   const router = useRouter();
   const { addToast } = useToast();
+  const dispatch = useAppDispatch();
+
+  // Redux selectors
+  const isLoading = useAppSelector(selectAuthLoading);
+  const authError = useAppSelector(selectAuthError);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, router]);
+
+  // Clear auth error on unmount
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
+
+  // Show error toast when auth fails
+  useEffect(() => {
+    if (authError) {
+      addToast({
+        type: "error",
+        title: "Login Failed",
+        description: authError
+      });
+    }
+  }, [authError, addToast]);
 
   const errors = useMemo(() => validateForm(values), [values]);
   const isValid = Object.keys(errors).length === 0;
@@ -60,23 +93,27 @@ export default function LoginPage() {
     setValues((currentValues) => ({ ...currentValues, [key]: value }));
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitted(true);
     setTouched({ email: "true", password: "true" });
 
     if (Object.keys(errors).length === 0) {
-      setIsLoading(true);
-      
-      // TODO: Replace this logic with actual backend authentication.
-      setTimeout(() => {
+      try {
+        await dispatch(loginThunk({
+          email: values.email,
+          password: values.password
+        })).unwrap();
+        
         addToast({
           type: "success",
           title: "Welcome back!",
           description: "Successfully logged in to TransitOps."
         });
         router.push("/dashboard");
-      }, 900);
+      } catch (error) {
+        // Error is handled by the useEffect above
+      }
     }
   }
 

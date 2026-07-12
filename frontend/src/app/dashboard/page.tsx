@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useMemo, useState, useEffect } from "react";
 import {
   Badge,
   Button,
@@ -27,6 +27,13 @@ import {
   type VehicleStatus,
 } from "@/constants/dashboard";
 import SmartInsights from "@/components/dashboard/SmartInsights";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { fetchDashboardKpis, shouldFetchDashboard } from "@/store/slices/dashboardSlice";
+import { 
+  selectDashboardKpis, 
+  selectDashboardLoading, 
+  selectDashboardLastFetched 
+} from "@/store/selectors/dashboardSelectors";
 
 type DashboardFiltersState = Record<DashboardFilterKey, string>;
 
@@ -52,6 +59,18 @@ const tripColumns: TableColumn<RecentTrip>[] = [
 export default function DashboardPage() {
   const [filters, setFilters] = useState<DashboardFiltersState>(initialFilters);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const dispatch = useAppDispatch();
+  const dashboardKpis = useAppSelector(selectDashboardKpis);
+  const isLoading = useAppSelector(selectDashboardLoading);
+  const lastFetched = useAppSelector(selectDashboardLastFetched);
+
+  // Fetch dashboard KPIs on mount and when cache is stale
+  useEffect(() => {
+    if (shouldFetchDashboard(lastFetched)) {
+      dispatch(fetchDashboardKpis());
+    }
+  }, [dispatch, lastFetched]);
 
   const filteredTrips = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -122,16 +141,65 @@ export default function DashboardPage() {
 
       <PageSection>
         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {dashboardStats.map((stat) => (
-            <StatCard
-              key={stat.title}
-              title={stat.title}
-              value={stat.value}
-              icon={<DashboardIcon name={stat.icon} />}
-              color={stat.color}
-              className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
-            />
-          ))}
+          {isLoading && !dashboardKpis ? (
+            <div className="col-span-full text-center text-slate-400">Loading dashboard...</div>
+          ) : dashboardKpis ? (
+            <>
+              <StatCard
+                title="Active Vehicles"
+                value={dashboardKpis.activeVehiclesCount.toString()}
+                icon={<DashboardIcon name="truck" />}
+                color="blue"
+                className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
+              />
+              <StatCard
+                title="Available Vehicles"
+                value={dashboardKpis.availableVehiclesCount.toString()}
+                icon={<DashboardIcon name="check" />}
+                color="green"
+                className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
+              />
+              <StatCard
+                title="Maintenance"
+                value={dashboardKpis.maintenanceVehiclesCount.toString()}
+                icon={<DashboardIcon name="wrench" />}
+                color="orange"
+                className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
+              />
+              <StatCard
+                title="Active Drivers"
+                value={dashboardKpis.activeDriversCount.toString()}
+                icon={<DashboardIcon name="users" />}
+                color="blue"
+                className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
+              />
+              <StatCard
+                title="Active Trips"
+                value={dashboardKpis.activeTripsCount.toString()}
+                icon={<DashboardIcon name="clock" />}
+                color="amber"
+                className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
+              />
+              <StatCard
+                title="Avg. Efficiency"
+                value={`${dashboardKpis.averageEfficiencyPercent}%`}
+                icon={<DashboardIcon name="gauge" />}
+                color="green"
+                className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
+              />
+            </>
+          ) : (
+            dashboardStats.map((stat) => (
+              <StatCard
+                key={stat.title}
+                title={stat.title}
+                value={stat.value}
+                icon={<DashboardIcon name={stat.icon} />}
+                color={stat.color}
+                className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
+              />
+            ))
+          )}
         </section>
       </PageSection>
 

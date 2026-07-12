@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Button, Card, PageTransition, PageSection } from "@/components/ui";
 import DeleteDriverDialog from "@/components/drivers/DeleteDriverDialog";
 import DriverDetailsDrawer from "@/components/drivers/DriverDetailsDrawer";
@@ -11,6 +11,19 @@ import DriverFormModal from "@/components/drivers/DriverFormModal";
 import DriverTable from "@/components/drivers/DriverTable";
 import { drivers } from "@/constants/drivers";
 import type { Driver } from "@/types/driver";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+  fetchDrivers,
+  createDriver,
+  updateDriver,
+  deleteDriver,
+  shouldFetchDrivers
+} from "@/store/slices/driverSlice";
+import {
+  selectDriverList,
+  selectDriverLoading,
+  selectDriverLastFetched
+} from "@/store/selectors/driverSelectors";
 
 const initialFilters: DriverFiltersState = {
   search: "",
@@ -28,10 +41,25 @@ export default function DriversPage() {
     null,
   );
 
+  const dispatch = useAppDispatch();
+  const reduxDrivers = useAppSelector(selectDriverList);
+  const isLoading = useAppSelector(selectDriverLoading);
+  const lastFetched = useAppSelector(selectDriverLastFetched);
+
+  // Fetch drivers on mount or when cache is stale
+  useEffect(() => {
+    if (shouldFetchDrivers(lastFetched)) {
+      dispatch(fetchDrivers());
+    }
+  }, [dispatch, lastFetched]);
+
+  // Use Redux drivers if available, otherwise fall back to constants
+  const driverSource = reduxDrivers.length > 0 ? reduxDrivers : drivers;
+
   const visibleDrivers = useMemo(() => {
     const query = filters.search.trim().toLowerCase();
 
-    return drivers
+    return driverSource
       .filter((driver) => {
         const matchesSearch =
           !query ||
@@ -58,7 +86,7 @@ export default function DriversPage() {
             return secondDriver.createdAt.localeCompare(firstDriver.createdAt);
         }
       });
-  }, [filters]);
+  }, [filters, driverSource]);
 
   function updateFilter<TKey extends keyof DriverFiltersState>(
     key: TKey,
@@ -80,9 +108,18 @@ export default function DriversPage() {
   function handleDriverSave() {
     setIsFormOpen(false);
     setEditingDriver(null);
+    // Refresh driver list
+    dispatch(fetchDrivers());
   }
 
-  function handleDeleteConfirm() {
+  async function handleDeleteConfirm() {
+    if (driverPendingDelete) {
+      try {
+        await dispatch(deleteDriver(driverPendingDelete._id)).unwrap();
+      } catch (error) {
+        console.error('Failed to delete driver:', error);
+      }
+    }
     setDriverPendingDelete(null);
   }
 
