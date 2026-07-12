@@ -1,98 +1,53 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# TransitOps — Mongoose Schemas (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+7 entities, mapped 1:1 to the "Expected Database Entities" list in the brief
+(Users/Roles folded into one `User` doc with a `role` enum for RBAC).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
+## Files
+```
+src/
+  common/enums/index.ts        Role + status enums, shared everywhere
+  schemas/
+    user.schema.ts             Auth + RBAC
+    vehicle.schema.ts          Vehicle Registry (3.3)
+    driver.schema.ts           Driver Management (3.4)
+    trip.schema.ts             Trip Management (3.5)
+    maintenance-log.schema.ts  Maintenance (3.6)
+    fuel-log.schema.ts         Fuel logging (3.7)
+    expense.schema.ts          Tolls / other costs (3.7)
+    schemas.module.ts          One-stop MongooseModule.forFeature() registration
 ```
 
-## Compile and run the project
+Drop `src/` into your Nest project root (merge with your existing `src/`), then
+`import { SchemasModule } from './schemas/schemas.module'` into `AppModule`
+(or wherever you inject models).
 
-```bash
-# development
-$ npm run start
+## Relationships
+- `Trip.vehicle` → `Vehicle`, `Trip.driver` → `Driver`
+- `MaintenanceLog.vehicle` → `Vehicle`
+- `FuelLog.vehicle` → `Vehicle`, `FuelLog.trip` → `Trip` (optional, enables per-trip fuel efficiency)
+- `Expense.vehicle` → `Vehicle`, `Expense.trip` → `Trip` (optional)
+- `Driver.userId` → `User` (optional, only if drivers log in themselves)
 
-# watch mode
-$ npm run start:dev
+## Business rules — schema vs. service layer
+Schemas enforce what Mongo can enforce declaratively (uniqueness, enums, min/max,
+required fields). Everything cross-document goes in your service layer, run inside
+a Mongo **transaction** (session) so a trip dispatch can't half-update:
 
-# production mode
-$ npm run start:prod
-```
+| Rule | Where to enforce |
+|---|---|
+| Registration number unique | `unique: true` index (schema) ✅ |
+| Cargo weight ≤ vehicle max load | `TripService.create()` — load the vehicle, compare `cargoWeightKg` vs `maxLoadCapacityKg` |
+| Retired/In Shop vehicles hidden from dispatch | Query filter: `Vehicle.find({ status: 'AVAILABLE' })` in the dispatch-selection endpoint |
+| Expired/Suspended drivers can't be assigned | `TripService.create()` — check `licenseExpiryDate > now` and `status === 'AVAILABLE'` |
+| Vehicle/driver already On Trip can't be reassigned | Same check, on `Vehicle.status` / `Driver.status` |
+| Dispatch → both go `ON_TRIP` | `TripService.dispatch()` updates `Trip.status`, `Vehicle.status`, `Driver.status` together |
+| Complete → both go back to `AVAILABLE` | `TripService.complete()` |
+| Cancel dispatched trip → restore `AVAILABLE` | `TripService.cancel()` |
+| Create active maintenance → vehicle `IN_SHOP` | `MaintenanceService.create()` |
+| Close maintenance → vehicle `AVAILABLE` unless `RETIRED` | `MaintenanceService.close()` — check current status before overwriting |
+| Total operational cost = Fuel + Maintenance | Aggregation pipeline over `FuelLog` + `MaintenanceLog`, grouped by `vehicle` |
+| Vehicle ROI = (Revenue − (Maintenance + Fuel)) / Acquisition Cost | Aggregation combining `Trip` revenue (if you add a `revenue` field) with the cost aggregation above |
 
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Wrap dispatch/complete/cancel/maintenance-toggle in `session.withTransaction()`
+so a crash mid-update can't leave a vehicle `ON_TRIP` with no matching trip.
