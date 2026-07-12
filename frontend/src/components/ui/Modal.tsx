@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type ModalProps = {
   isOpen: boolean;
@@ -49,55 +50,64 @@ export default function Modal({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-    >
-      <button
-        type="button"
-        className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm"
-        aria-label="Close modal"
-        onClick={closeOnOverlayClick ? onClose : undefined}
-      />
-
-      <div
-        className={[
-          "relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-hidden rounded-xl border border-slate-800 bg-slate-900 shadow-2xl shadow-black/50",
-          className,
-        ].join(" ")}
-      >
-        <div className="flex items-center justify-between gap-4 border-b border-slate-800 px-5 py-4">
-          <h2 id="modal-title" className="text-base font-semibold text-slate-50">
-            {title}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+    <AnimatePresence>
+      {isOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          {/* Animated backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+            onClick={closeOnOverlayClick ? onClose : undefined}
             aria-label="Close modal"
+          />
+
+          {/* Animated panel */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.97, y: 5 }}
+            transition={{ type: "spring", stiffness: 350, damping: 28 }}
+            className={[
+              "relative z-10 max-h-[calc(100vh-2rem)] w-full max-w-lg overflow-hidden rounded-[20px] border border-border/50 bg-surface/90 backdrop-blur-2xl shadow-2xl shadow-black/60 ring-1 ring-white/5",
+              className,
+            ].join(" ")}
           >
-            <CloseIcon />
-          </button>
-        </div>
+            <div className="flex items-center justify-between gap-4 border-b border-border/50 px-6 py-5">
+              <h2 id="modal-title" className="text-base font-semibold text-foreground">
+                {title}
+              </h2>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-foreground/50 transition-colors hover:bg-border/50 hover:text-foreground focus-ring"
+                aria-label="Close modal"
+              >
+                <CloseIcon />
+              </button>
+            </div>
 
-        <div className="overflow-y-auto px-5 py-4 text-sm text-slate-300">
-          {children}
-        </div>
+            <div className="overflow-y-auto px-6 py-5 text-sm text-foreground/80">
+              {children}
+            </div>
 
-        {footer ? (
-          <div className="flex flex-col-reverse gap-3 border-t border-slate-800 px-5 py-4 sm:flex-row sm:justify-end">
-            {footer}
-          </div>
-        ) : null}
-      </div>
-    </div>
+            {footer ? (
+              <div className="flex flex-col-reverse gap-3 border-t border-border/50 px-6 py-5 sm:flex-row sm:justify-end">
+                {footer}
+              </div>
+            ) : null}
+          </motion.div>
+        </div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 

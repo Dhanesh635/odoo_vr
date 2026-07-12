@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button, Card } from "@/components/ui";
+import { Button, Card, PageTransition, PageSection } from "@/components/ui";
 import DeleteDriverDialog from "@/components/drivers/DeleteDriverDialog";
 import DriverDetailsDrawer from "@/components/drivers/DriverDetailsDrawer";
 import DriverFilters, {
@@ -87,46 +87,52 @@ export default function DriversPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-50">
-            Driver Management
-          </h1>
-          <p className="mt-2 text-base text-slate-400">
-            Manage driver profiles, license validity, and availability.
-          </p>
-        </div>
+    <PageTransition className="space-y-6">
+      <PageSection>
+        <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-50">
+              Driver Management
+            </h1>
+            <p className="mt-2 text-base text-slate-400">
+              Manage driver profiles, license validity, and availability.
+            </p>
+          </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button
-            type="button"
-            onClick={openAddDriverModal}
-            leftIcon={<PlusIcon />}
-          >
-            Add Driver
-          </Button>
-          <Button type="button" variant="secondary" leftIcon={<ExportIcon />}>
-            Export CSV
-          </Button>
-        </div>
-      </header>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              type="button"
+              onClick={openAddDriverModal}
+              leftIcon={<PlusIcon />}
+            >
+              Add Driver
+            </Button>
+            <Button type="button" variant="secondary" leftIcon={<ExportIcon />}>
+              Export CSV
+            </Button>
+          </div>
+        </header>
+      </PageSection>
 
-      <Card bodyClassName="p-4">
-        <DriverFilters filters={filters} onChange={updateFilter} />
-      </Card>
+      <PageSection>
+        <Card bodyClassName="p-4">
+          <DriverFilters filters={filters} onChange={updateFilter} />
+        </Card>
+      </PageSection>
 
-      <Card title="Driver Registry" bodyClassName="p-0 md:p-5">
-        <div className="p-4 md:p-0">
-          <DriverTable
-            drivers={visibleDrivers}
-            onAddDriver={openAddDriverModal}
-            onView={setSelectedDriver}
-            onEdit={openEditDriverModal}
-            onDelete={setDriverPendingDelete}
-          />
-        </div>
-      </Card>
+      <PageSection>
+        <Card title="Driver Registry" bodyClassName="p-0 md:p-5">
+          <div className="p-4 md:p-0">
+            <DriverTable
+              drivers={visibleDrivers}
+              onAddDriver={openAddDriverModal}
+              onView={setSelectedDriver}
+              onEdit={openEditDriverModal}
+              onDelete={setDriverPendingDelete}
+            />
+          </div>
+        </Card>
+      </PageSection>
 
       <DriverFormModal
         isOpen={isFormOpen}
@@ -148,7 +154,7 @@ export default function DriversPage() {
         onCancel={() => setDriverPendingDelete(null)}
         onConfirm={handleDeleteConfirm}
       />
-    </div>
+    </PageTransition>
   );
 }
 

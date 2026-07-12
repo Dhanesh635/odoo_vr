@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button, Card, ConfirmDialog } from "@/components/ui";
+import { Button, Card, ConfirmDialog, PageTransition, PageSection } from "@/components/ui";
 import TripCompleteModal from "@/components/trips/TripCompleteModal";
 import TripDetailsDrawer from "@/components/trips/TripDetailsDrawer";
 import TripFilters from "@/components/trips/TripFilters";
@@ -316,52 +316,60 @@ export default function TripsPage() {
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       {/* Page Header */}
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-50">Trip Management</h1>
-          <p className="mt-2 text-base text-slate-400">
-            Create, dispatch and monitor transport operations.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button onClick={openCreateModal} leftIcon={<PlusIcon />}>
-            Create Trip
-          </Button>
-          <Button
-            variant="secondary"
-            leftIcon={<ExportIcon />}
-            onClick={handleExportCsv}
-          >
-            Export CSV
-          </Button>
-        </div>
-      </header>
+      <PageSection>
+        <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-50">Trip Management</h1>
+            <p className="mt-2 text-base text-slate-400">
+              Create, dispatch and monitor transport operations.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button onClick={openCreateModal} leftIcon={<PlusIcon />}>
+              Create Trip
+            </Button>
+            <Button
+              variant="secondary"
+              leftIcon={<ExportIcon />}
+              onClick={handleExportCsv}
+            >
+              Export CSV
+            </Button>
+          </div>
+        </header>
+      </PageSection>
 
       {/* Summary Cards */}
-      <TripSummaryCards trips={trips} />
+      <PageSection>
+        <TripSummaryCards trips={trips} />
+      </PageSection>
 
       {/* Filters */}
-      <Card bodyClassName="p-4">
-        <TripFilters filters={filters} onChange={updateFilter} />
-      </Card>
+      <PageSection>
+        <Card bodyClassName="p-4">
+          <TripFilters filters={filters} onChange={updateFilter} />
+        </Card>
+      </PageSection>
 
       {/* Table */}
-      <Card title="Trip Registry" bodyClassName="p-0 md:p-5">
-        <div className="p-4 md:p-0">
-          <TripTable
-            trips={visibleTrips}
-            onCreateTrip={openCreateModal}
-            onView={setSelectedTrip}
-            onEdit={openEditModal}
-            onDispatch={setTripPendingDispatch}
-            onComplete={setTripPendingComplete}
-            onCancel={setTripPendingCancel}
-            onDelete={setTripPendingDelete}
-          />
-        </div>
-      </Card>
+      <PageSection>
+        <Card title="Trip Registry" bodyClassName="p-0 md:p-5">
+          <div className="p-4 md:p-0">
+            <TripTable
+              trips={visibleTrips}
+              onCreateTrip={openCreateModal}
+              onView={setSelectedTrip}
+              onEdit={openEditModal}
+              onDispatch={setTripPendingDispatch}
+              onComplete={setTripPendingComplete}
+              onCancel={setTripPendingCancel}
+              onDelete={setTripPendingDelete}
+            />
+          </div>
+        </Card>
+      </PageSection>
 
       {/* Create / Edit Modal */}
       <TripFormModal
@@ -431,7 +439,7 @@ export default function TripsPage() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setTripPendingDelete(null)}
       />
-    </div>
+    </PageTransition>
   );
 }
 

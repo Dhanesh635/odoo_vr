@@ -29,45 +29,59 @@ export default function Select({
 
   return (
     <div className="w-full">
-      {label ? (
-        <label
-          htmlFor={selectId}
-          className="mb-2 block text-sm font-medium text-slate-200"
+      <div className="relative group">
+        <select
+          id={selectId}
+          disabled={disabled}
+          aria-invalid={hasError}
+          aria-describedby={hasError ? `${selectId}-error` : undefined}
+          className={[
+            "peer h-14 w-full appearance-none rounded-lg border bg-surface/50 px-4 text-sm text-foreground outline-none transition-all duration-300",
+            "focus-visible:border-primary focus-visible:bg-surface focus-visible:ring-1 focus-visible:ring-primary focus-visible:shadow-[0_0_15px_rgba(99,102,241,0.15)]",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            label ? "pt-4 pb-1" : "py-3",
+            hasError ? "border-danger text-danger focus-visible:border-danger focus-visible:ring-danger" : "border-border/50",
+            className,
+          ].join(" ")}
+          {...props}
         >
-          {label}
-        </label>
-      ) : null}
-
-      <select
-        id={selectId}
-        disabled={disabled}
-        aria-invalid={hasError}
-        aria-describedby={hasError ? `${selectId}-error` : undefined}
-        className={[
-          "h-11 w-full rounded-lg border bg-slate-900 px-3 text-sm text-slate-100 outline-none transition-colors",
-          "focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20",
-          "disabled:cursor-not-allowed disabled:bg-slate-900/50 disabled:text-slate-500",
-          hasError ? "border-red-500" : "border-slate-700",
-          className,
-        ].join(" ")}
-        {...props}
-      >
-        <option value="" disabled>
-          {placeholder}
-        </option>
-        {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-            disabled={option.disabled}
-          >
-            {option.label}
+          <option value="" disabled>
+            {placeholder}
           </option>
-        ))}
-      </select>
+          {options.map((option) => (
+            <option
+              key={option.value}
+              value={option.value}
+              disabled={option.disabled}
+            >
+              {option.label}
+            </option>
+          ))}
+        </select>
+
+        {/* Custom Chevron for select */}
+        <div className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-foreground/40 peer-focus:text-primary">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+
+        {label ? (
+          <label
+            htmlFor={selectId}
+            className={[
+              "absolute top-2 left-4 z-10 origin-[0] -translate-y-0.5 scale-75 transform text-xs text-foreground/50 transition-all duration-300 pointer-events-none",
+              "peer-focus:text-primary",
+              hasError ? "text-danger peer-focus:text-danger" : ""
+            ].join(" ")}
+          >
+            {label}
+          </label>
+        ) : null}
+      </div>
 
       {error ? (
-        <p id={`${selectId}-error`} className="mt-2 text-sm text-red-400">
+        <p id={`${selectId}-error`} className="mt-1.5 text-xs font-medium text-danger">
           {error}
         </p>
       ) : null}

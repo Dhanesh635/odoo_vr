@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button, Card } from "@/components/ui";
+import { Button, Card, PageTransition, PageSection } from "@/components/ui";
 import DeleteVehicleDialog from "@/components/vehicles/DeleteVehicleDialog";
 import VehicleDetailsDrawer from "@/components/vehicles/VehicleDetailsDrawer";
 import VehicleFilters, {
@@ -91,44 +91,50 @@ export default function FleetPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-50">Fleet Management</h1>
-          <p className="mt-2 text-base text-slate-400">
-            Manage all vehicles in your fleet.
-          </p>
-        </div>
+    <PageTransition className="space-y-6">
+      <PageSection>
+        <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-50">Fleet Management</h1>
+            <p className="mt-2 text-base text-slate-400">
+              Manage all vehicles in your fleet.
+            </p>
+          </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button
-            type="button"
-            onClick={openAddVehicleModal}
-            leftIcon={<PlusIcon />}
-          >
-            Add Vehicle
-          </Button>
-          <Button type="button" variant="secondary" leftIcon={<ExportIcon />}>
-            Export CSV
-          </Button>
-        </div>
-      </header>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              type="button"
+              onClick={openAddVehicleModal}
+              leftIcon={<PlusIcon />}
+            >
+              Add Vehicle
+            </Button>
+            <Button type="button" variant="secondary" leftIcon={<ExportIcon />}>
+              Export CSV
+            </Button>
+          </div>
+        </header>
+      </PageSection>
 
-      <Card bodyClassName="p-4">
-        <VehicleFilters filters={filters} onChange={updateFilter} />
-      </Card>
+      <PageSection>
+        <Card bodyClassName="p-4">
+          <VehicleFilters filters={filters} onChange={updateFilter} />
+        </Card>
+      </PageSection>
 
-      <Card title="Vehicle Registry" bodyClassName="p-0 md:p-5">
-        <div className="p-4 md:p-0">
-          <VehicleTable
-            vehicles={visibleVehicles}
-            onAddVehicle={openAddVehicleModal}
-            onView={setSelectedVehicle}
-            onEdit={openEditVehicleModal}
-            onDelete={setVehiclePendingDelete}
-          />
-        </div>
-      </Card>
+      <PageSection>
+        <Card title="Vehicle Registry" bodyClassName="p-0 md:p-5">
+          <div className="p-4 md:p-0">
+            <VehicleTable
+              vehicles={visibleVehicles}
+              onAddVehicle={openAddVehicleModal}
+              onView={setSelectedVehicle}
+              onEdit={openEditVehicleModal}
+              onDelete={setVehiclePendingDelete}
+            />
+          </div>
+        </Card>
+      </PageSection>
 
       <VehicleFormModal
         isOpen={isFormOpen}
@@ -150,7 +156,7 @@ export default function FleetPage() {
         onCancel={() => setVehiclePendingDelete(null)}
         onConfirm={handleDeleteConfirm}
       />
-    </div>
+    </PageTransition>
   );
 }
 

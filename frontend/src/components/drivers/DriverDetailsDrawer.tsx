@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { Badge } from "@/components/ui";
 import { LicenseStatusBadge, SafetyScore } from "./DriverTable";
+import { motion, AnimatePresence } from "framer-motion";
+import { slideInRight } from "@/lib/motion";
 import type { Driver } from "@/types/driver";
 
 type DriverDetailsDrawerProps = {
@@ -21,9 +23,7 @@ export default function DriverDetailsDrawer({
   onClose,
 }: DriverDetailsDrawerProps) {
   useEffect(() => {
-    if (!driver) {
-      return;
-    }
+    if (!driver) return;
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -35,20 +35,28 @@ export default function DriverDetailsDrawer({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [driver, onClose]);
 
-  if (!driver) {
-    return null;
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true">
-      <button
-        type="button"
-        className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
-        onClick={onClose}
-        aria-label="Close driver details"
-      />
-      <aside className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-slate-800 bg-slate-900 shadow-2xl shadow-black/50">
-        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+    <AnimatePresence>
+      {driver ? (
+        <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true">
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            type="button"
+            className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+            onClick={onClose}
+            aria-label="Close driver details"
+          />
+          <motion.aside
+            variants={slideInRight}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-slate-800 bg-slate-900 shadow-2xl shadow-black/50"
+          >
+            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
               Driver Details
@@ -60,7 +68,7 @@ export default function DriverDetailsDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100 focus-ring"
             aria-label="Close driver details"
           >
             <CloseIcon />
@@ -109,8 +117,10 @@ export default function DriverDetailsDrawer({
           <PlaceholderSection title="Assigned Trips" />
           <PlaceholderSection title="Recent Activity" />
         </div>
-      </aside>
+      </motion.aside>
     </div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 

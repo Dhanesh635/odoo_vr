@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button, Card, ConfirmDialog } from "@/components/ui";
+import { Button, Card, ConfirmDialog, PageTransition, PageSection } from "@/components/ui";
 import MaintenanceCompleteModal from "@/components/maintenance/MaintenanceCompleteModal";
 import MaintenanceDetailsDrawer from "@/components/maintenance/MaintenanceDetailsDrawer";
 import MaintenanceFilters from "@/components/maintenance/MaintenanceFilters";
@@ -329,53 +329,61 @@ export default function MaintenancePage() {
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       {/* Page Header */}
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-50">
-            Maintenance Management
-          </h1>
-          <p className="mt-2 text-base text-slate-400">
-            Track vehicle servicing, repairs and maintenance history.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button onClick={openScheduleModal} leftIcon={<PlusIcon />}>
-            Schedule Maintenance
-          </Button>
-          <Button
-            variant="secondary"
-            leftIcon={<ExportIcon />}
-            onClick={handleExportCsv}
-          >
-            Export CSV
-          </Button>
-        </div>
-      </header>
+      <PageSection>
+        <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-50">
+              Maintenance Management
+            </h1>
+            <p className="mt-2 text-base text-slate-400">
+              Track vehicle servicing, repairs and maintenance history.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button onClick={openScheduleModal} leftIcon={<PlusIcon />}>
+              Schedule Maintenance
+            </Button>
+            <Button
+              variant="secondary"
+              leftIcon={<ExportIcon />}
+              onClick={handleExportCsv}
+            >
+              Export CSV
+            </Button>
+          </div>
+        </header>
+      </PageSection>
 
       {/* Summary Cards */}
-      <MaintenanceSummaryCards records={records} />
+      <PageSection>
+        <MaintenanceSummaryCards records={records} />
+      </PageSection>
 
       {/* Filters */}
-      <Card bodyClassName="p-4">
-        <MaintenanceFilters filters={filters} onChange={updateFilter} />
-      </Card>
+      <PageSection>
+        <Card bodyClassName="p-4">
+          <MaintenanceFilters filters={filters} onChange={updateFilter} />
+        </Card>
+      </PageSection>
 
       {/* Table */}
-      <Card title="Maintenance Records" bodyClassName="p-0 md:p-5">
-        <div className="p-4 md:p-0">
-          <MaintenanceTable
-            records={visibleRecords}
-            onSchedule={openScheduleModal}
-            onView={setSelectedRecord}
-            onEdit={openEditModal}
-            onComplete={setRecordPendingComplete}
-            onCancel={setRecordPendingCancel}
-            onDelete={setRecordPendingDelete}
-          />
-        </div>
-      </Card>
+      <PageSection>
+        <Card title="Maintenance Records" bodyClassName="p-0 md:p-5">
+          <div className="p-4 md:p-0">
+            <MaintenanceTable
+              records={visibleRecords}
+              onSchedule={openScheduleModal}
+              onView={setSelectedRecord}
+              onEdit={openEditModal}
+              onComplete={setRecordPendingComplete}
+              onCancel={setRecordPendingCancel}
+              onDelete={setRecordPendingDelete}
+            />
+          </div>
+        </Card>
+      </PageSection>
 
       {/* Schedule / Edit Modal */}
       <MaintenanceFormModal
@@ -430,7 +438,7 @@ export default function MaintenancePage() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setRecordPendingDelete(null)}
       />
-    </div>
+    </PageTransition>
   );
 }
 

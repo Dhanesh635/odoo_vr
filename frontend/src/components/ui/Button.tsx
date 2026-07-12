@@ -1,10 +1,14 @@
-import { ButtonHTMLAttributes, ReactNode } from "react";
+"use client";
+
+import { ReactNode } from "react";
+import { motion, HTMLMotionProps } from "framer-motion";
 import LoadingSpinner from "./LoadingSpinner";
 
 type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "ghost";
 type ButtonSize = "sm" | "md" | "lg";
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+type ButtonProps = Omit<HTMLMotionProps<"button">, "children"> & {
+  children?: ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
   isLoading?: boolean;
@@ -14,15 +18,15 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    "bg-amber-500 text-slate-950 hover:bg-amber-400 focus-visible:ring-amber-400",
+    "bg-gradient-to-r from-primary to-secondary text-white hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] focus-visible:ring-primary",
   secondary:
-    "bg-slate-800 text-slate-100 hover:bg-slate-700 focus-visible:ring-slate-500",
+    "bg-surface border border-border text-foreground hover:bg-border/50 hover:text-white focus-visible:ring-foreground/50",
   danger:
-    "bg-red-600 text-white hover:bg-red-500 focus-visible:ring-red-500",
+    "bg-danger text-white hover:shadow-[0_0_20px_rgba(239,68,68,0.4)] focus-visible:ring-danger",
   success:
-    "bg-emerald-600 text-white hover:bg-emerald-500 focus-visible:ring-emerald-500",
+    "bg-success text-white hover:shadow-[0_0_20px_rgba(16,185,129,0.4)] focus-visible:ring-success",
   ghost:
-    "bg-transparent text-slate-300 hover:bg-slate-800 hover:text-slate-50 focus-visible:ring-slate-500",
+    "bg-transparent text-foreground/70 hover:bg-surface hover:text-foreground focus-visible:ring-foreground/50",
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -46,13 +50,16 @@ export default function Button({
   const isDisabled = disabled || isLoading;
 
   return (
-    <button
+    <motion.button
       type={type}
       disabled={isDisabled}
+      whileHover={isDisabled ? undefined : { scale: 1.02 }}
+      whileTap={isDisabled ? undefined : { scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 400, damping: 20 }}
       className={[
-        "inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
-        "disabled:cursor-not-allowed disabled:opacity-55",
+        "inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-300",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+        "disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none",
         variantClasses[variant],
         sizeClasses[size],
         className,
@@ -62,7 +69,7 @@ export default function Button({
       {isLoading ? <LoadingSpinner size="sm" /> : leftIcon}
       <span>{children}</span>
       {!isLoading ? rightIcon : null}
-    </button>
+    </motion.button>
   );
 }
 
