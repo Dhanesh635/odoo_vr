@@ -1,6 +1,15 @@
 import { ReactNode } from "react";
 
-type StatCardColor = "amber" | "blue" | "green" | "red" | "gray";
+type StatCardColor =
+  | "amber"
+  | "blue"
+  | "emerald"
+  | "gray"
+  | "green"
+  | "orange"
+  | "purple"
+  | "red"
+  | "yellow";
 
 type StatCardProps = {
   title: string;
@@ -14,9 +23,13 @@ type StatCardProps = {
 const colorClasses: Record<StatCardColor, string> = {
   amber: "bg-amber-500/10 text-amber-300 ring-amber-500/20",
   blue: "bg-sky-500/10 text-sky-300 ring-sky-500/20",
-  green: "bg-emerald-500/10 text-emerald-300 ring-emerald-500/20",
-  red: "bg-red-500/10 text-red-300 ring-red-500/20",
+  emerald: "bg-emerald-500/10 text-emerald-300 ring-emerald-500/20",
   gray: "bg-slate-500/10 text-slate-300 ring-slate-500/20",
+  green: "bg-emerald-500/10 text-emerald-300 ring-emerald-500/20",
+  orange: "bg-orange-500/10 text-orange-300 ring-orange-500/20",
+  purple: "bg-purple-500/10 text-purple-300 ring-purple-500/20",
+  red: "bg-red-500/10 text-red-300 ring-red-500/20",
+  yellow: "bg-yellow-500/10 text-yellow-300 ring-yellow-500/20",
 };
 
 export default function StatCard({
