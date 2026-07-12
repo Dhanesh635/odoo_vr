@@ -73,7 +73,7 @@ export default function TripsPage() {
   // Fetch trips on mount or when cache is stale
   useEffect(() => {
     if (shouldFetchTrips(lastFetched)) {
-      dispatch(fetchTrips());
+      dispatch(fetchTrips({}));
     }
   }, [dispatch, lastFetched]);
 
@@ -95,14 +95,14 @@ export default function TripsPage() {
     const query = filters.search.trim().toLowerCase();
 
     return tripSource
-      .filter((trip) => {
+      .filter((trip: any) => {
         const matchesSearch =
           !query ||
-          trip.tripId.toLowerCase().includes(query) ||
-          trip.vehicleName.toLowerCase().includes(query) ||
-          trip.driverName.toLowerCase().includes(query) ||
-          trip.source.toLowerCase().includes(query) ||
-          trip.destination.toLowerCase().includes(query);
+          (trip.tripId || trip._id || '').toLowerCase().includes(query) ||
+          (trip.vehicleName || '').toLowerCase().includes(query) ||
+          (trip.driverName || '').toLowerCase().includes(query) ||
+          (trip.source || '').toLowerCase().includes(query) ||
+          (trip.destination || '').toLowerCase().includes(query);
 
         const matchesStatus =
           filters.status === "All" || trip.status === filters.status;
@@ -112,16 +112,16 @@ export default function TripsPage() {
 
         return matchesSearch && matchesStatus && matchesVehicleType;
       })
-      .toSorted((a, b) => {
+      .toSorted((a: any, b: any) => {
         const sortBy: TripSortKey = filters.sortBy;
         switch (sortBy) {
           case "Oldest":
-            return a.createdAt.localeCompare(b.createdAt);
+            return (a.createdAt || '').localeCompare(b.createdAt || '');
           case "Longest Distance":
-            return b.plannedDistance - a.plannedDistance;
+            return (b.plannedDistance || b.plannedDistanceKm || 0) - (a.plannedDistance || a.plannedDistanceKm || 0);
           case "Latest":
           default:
-            return b.createdAt.localeCompare(a.createdAt);
+            return (b.createdAt || '').localeCompare(a.createdAt || '');
         }
       });
   }, [tripSource, filters]);

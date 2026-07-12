@@ -46,6 +46,29 @@ export const STALENESS_DURATIONS = {
 } as const;
 
 /**
+ * Checks if a cache entry is still valid (not stale)
+ * 
+ * This is the inverse of isCacheStale - convenience function for positive logic.
+ * 
+ * @param lastFetched - Timestamp when data was last fetched (null if never fetched)
+ * @param staleness - Maximum age in milliseconds before cache is considered stale
+ * @returns true if cache is still valid, false if stale or doesn't exist
+ * 
+ * @example
+ * if (isCacheValid(lastFetched, STALENESS_DURATIONS.DRIVER_LIST)) {
+ *   // Use cached data, no need to fetch
+ * }
+ */
+export function isCacheValid(
+  lastFetched: number | null,
+  staleness: number
+): boolean {
+  if (!lastFetched) return false;
+  const age = Date.now() - lastFetched;
+  return age < staleness;
+}
+
+/**
  * Checks if a cache entry is stale based on its age and staleness duration
  * 
  * Algorithm:

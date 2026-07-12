@@ -68,7 +68,7 @@ export default function DashboardPage() {
   // Fetch dashboard KPIs on mount and when cache is stale
   useEffect(() => {
     if (shouldFetchDashboard(lastFetched)) {
-      dispatch(fetchDashboardKpis());
+      dispatch(fetchDashboardKpis({}));
     }
   }, [dispatch, lastFetched]);
 
@@ -147,42 +147,42 @@ export default function DashboardPage() {
             <>
               <StatCard
                 title="Active Vehicles"
-                value={dashboardKpis.activeVehiclesCount.toString()}
+                value={dashboardKpis.activeVehicles.toString()}
                 icon={<DashboardIcon name="truck" />}
                 color="blue"
                 className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
               />
               <StatCard
                 title="Available Vehicles"
-                value={dashboardKpis.availableVehiclesCount.toString()}
+                value={dashboardKpis.availableVehicles.toString()}
                 icon={<DashboardIcon name="check" />}
                 color="green"
                 className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
               />
               <StatCard
                 title="Maintenance"
-                value={dashboardKpis.maintenanceVehiclesCount.toString()}
+                value={dashboardKpis.inMaintenance.toString()}
                 icon={<DashboardIcon name="wrench" />}
                 color="orange"
                 className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
               />
               <StatCard
                 title="Active Drivers"
-                value={dashboardKpis.activeDriversCount.toString()}
+                value={dashboardKpis.driversOnDuty.toString()}
                 icon={<DashboardIcon name="users" />}
                 color="blue"
                 className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
               />
               <StatCard
                 title="Active Trips"
-                value={dashboardKpis.activeTripsCount.toString()}
+                value={dashboardKpis.activeTrips.toString()}
                 icon={<DashboardIcon name="clock" />}
                 color="amber"
                 className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
               />
               <StatCard
-                title="Avg. Efficiency"
-                value={`${dashboardKpis.averageEfficiencyPercent}%`}
+                title="Fleet Utilization"
+                value={`${dashboardKpis.fleetUtilization}%`}
                 icon={<DashboardIcon name="gauge" />}
                 color="green"
                 className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"

@@ -49,7 +49,7 @@ export default function DriversPage() {
   // Fetch drivers on mount or when cache is stale
   useEffect(() => {
     if (shouldFetchDrivers(lastFetched)) {
-      dispatch(fetchDrivers());
+      dispatch(fetchDrivers({}));
     }
   }, [dispatch, lastFetched]);
 
@@ -61,29 +61,32 @@ export default function DriversPage() {
 
     return driverSource
       .filter((driver) => {
+        const driverName = ('fullName' in driver ? driver.fullName : (driver as any).name) || '';
         const matchesSearch =
           !query ||
-          driver.fullName.toLowerCase().includes(query) ||
+          driverName.toLowerCase().includes(query) ||
           driver.licenseNumber.toLowerCase().includes(query);
         const matchesStatus =
           filters.status === "All" || driver.status === filters.status;
         const matchesLicenseStatus =
           filters.licenseStatus === "All" ||
-          driver.licenseStatus === filters.licenseStatus;
+          (driver as any).licenseStatus === filters.licenseStatus;
 
         return matchesSearch && matchesStatus && matchesLicenseStatus;
       })
       .toSorted((firstDriver, secondDriver) => {
         switch (filters.sortBy) {
           case "Oldest":
-            return firstDriver.createdAt.localeCompare(secondDriver.createdAt);
+            return (firstDriver as any).createdAt?.localeCompare((secondDriver as any).createdAt) || 0;
           case "Driver Name":
-            return firstDriver.fullName.localeCompare(secondDriver.fullName);
+            const firstName = ('fullName' in firstDriver ? firstDriver.fullName : (firstDriver as any).name) || '';
+            const secondName = ('fullName' in secondDriver ? secondDriver.fullName : (secondDriver as any).name) || '';
+            return firstName.localeCompare(secondName);
           case "Safety Score":
             return secondDriver.safetyScore - firstDriver.safetyScore;
           case "Newest":
           default:
-            return secondDriver.createdAt.localeCompare(firstDriver.createdAt);
+            return (secondDriver as any).createdAt?.localeCompare((firstDriver as any).createdAt) || 0;
         }
       });
   }, [filters, driverSource]);
@@ -109,13 +112,14 @@ export default function DriversPage() {
     setIsFormOpen(false);
     setEditingDriver(null);
     // Refresh driver list
-    dispatch(fetchDrivers());
+    dispatch(fetchDrivers({}));
   }
 
   async function handleDeleteConfirm() {
     if (driverPendingDelete) {
       try {
-        await dispatch(deleteDriver(driverPendingDelete._id)).unwrap();
+        const driverId = (driverPendingDelete as any)._id || driverPendingDelete.id;
+        await dispatch(deleteDriver(driverId)).unwrap();
       } catch (error) {
         console.error('Failed to delete driver:', error);
       }
@@ -161,7 +165,7 @@ export default function DriversPage() {
         <Card title="Driver Registry" bodyClassName="p-0 md:p-5">
           <div className="p-4 md:p-0">
             <DriverTable
-              drivers={visibleDrivers}
+              drivers={visibleDrivers as any}
               onAddDriver={openAddDriverModal}
               onView={setSelectedDriver}
               onEdit={openEditDriverModal}
