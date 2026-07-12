@@ -45,7 +45,7 @@ export default function SearchBar({
 
   return (
     <div className="relative w-full">
-      <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500">
+      <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-foreground/40 z-20 group-focus-within:text-primary">
         <SearchIcon />
       </span>
       <input
@@ -54,9 +54,9 @@ export default function SearchBar({
         placeholder={placeholder}
         value={value}
         className={[
-          "h-11 w-full rounded-lg border border-slate-700 bg-slate-900 px-10 text-sm text-slate-100 outline-none transition-colors",
-          "placeholder:text-slate-500 focus-visible:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400/20",
-          "disabled:cursor-not-allowed disabled:bg-slate-900/50 disabled:text-slate-500",
+          "peer h-14 w-full rounded-lg border border-border/50 bg-surface/50 px-10 text-sm text-foreground outline-none transition-all duration-300",
+          "placeholder:text-foreground/40 focus-visible:border-primary focus-visible:bg-surface focus-visible:ring-1 focus-visible:ring-primary focus-visible:shadow-[0_0_15px_rgba(99,102,241,0.15)]",
+          "disabled:cursor-not-allowed disabled:opacity-50",
           className,
         ].join(" ")}
         {...props}
@@ -65,7 +65,7 @@ export default function SearchBar({
         <button
           type="button"
           onClick={onClear}
-          className="absolute inset-y-0 right-2 my-auto flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100 focus-ring"
+          className="absolute inset-y-0 right-3 my-auto flex h-8 w-8 items-center justify-center rounded-md text-foreground/40 transition-colors hover:bg-surface hover:text-foreground focus-ring z-20"
           aria-label="Clear search"
         >
           <ClearIcon />

@@ -16,16 +16,16 @@ type BadgeProps = {
 };
 
 const statusClasses: Record<BadgeStatus, string> = {
-  Available: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-  "On Trip": "border-sky-500/30 bg-sky-500/10 text-sky-300",
-  "Off Duty": "border-slate-500/30 bg-slate-500/10 text-slate-300",
-  "In Shop": "border-orange-500/30 bg-orange-500/10 text-orange-300",
-  Retired: "border-red-500/30 bg-red-500/10 text-red-300",
-  Completed: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-  Pending: "border-amber-500/30 bg-amber-500/10 text-amber-300",
-  Cancelled: "border-red-500/30 bg-red-500/10 text-red-300",
-  Suspended: "border-red-500/30 bg-red-500/10 text-red-300",
-  Draft: "border-slate-500/30 bg-slate-500/10 text-slate-300",
+  Available: "border-success/30 bg-success/10 text-success backdrop-blur-sm",
+  "On Trip": "border-primary/30 bg-primary/10 text-primary backdrop-blur-sm",
+  "Off Duty": "border-foreground/20 bg-foreground/10 text-foreground/80 backdrop-blur-sm",
+  "In Shop": "border-warning/30 bg-warning/10 text-warning backdrop-blur-sm",
+  Retired: "border-danger/30 bg-danger/10 text-danger backdrop-blur-sm",
+  Completed: "border-success/30 bg-success/10 text-success backdrop-blur-sm",
+  Pending: "border-warning/30 bg-warning/10 text-warning backdrop-blur-sm",
+  Cancelled: "border-danger/30 bg-danger/10 text-danger backdrop-blur-sm",
+  Suspended: "border-danger/30 bg-danger/10 text-danger backdrop-blur-sm",
+  Draft: "border-foreground/20 bg-foreground/10 text-foreground/80 backdrop-blur-sm",
 };
 
 /** Statuses that show a pulse dot to indicate active/pending state */

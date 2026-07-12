@@ -1,7 +1,9 @@
 "use client";
 
 import { FormEvent, ReactNode, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button, Card, Input, PageTransition, PageSection } from "@/components/ui";
+import { useToast } from "@/components/ui/Toast";
 
 type LoginFormValues = {
   email: string;
@@ -41,6 +43,10 @@ export default function LoginPage() {
   const [touched, setTouched] = useState<FieldErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const router = useRouter();
+  const { addToast } = useToast();
 
   const errors = useMemo(() => validateForm(values), [values]);
   const isValid = Object.keys(errors).length === 0;
@@ -57,6 +63,21 @@ export default function LoginPage() {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitted(true);
+    setTouched({ email: "true", password: "true" });
+
+    if (Object.keys(errors).length === 0) {
+      setIsLoading(true);
+      
+      // TODO: Replace this logic with actual backend authentication.
+      setTimeout(() => {
+        addToast({
+          type: "success",
+          title: "Welcome back!",
+          description: "Successfully logged in to TransitOps."
+        });
+        router.push("/dashboard");
+      }, 900);
+    }
   }
 
   return (
@@ -139,7 +160,8 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 size="lg"
-                disabled={!isValid}
+                disabled={!isValid || isLoading}
+                isLoading={isLoading}
                 className="w-full transition-transform hover:-translate-y-0.5 active:translate-y-0"
               >
                 Login

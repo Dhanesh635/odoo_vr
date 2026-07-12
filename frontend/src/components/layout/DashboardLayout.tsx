@@ -6,6 +6,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import { ToastProvider } from "@/components/ui/Toast";
+import CommandPalette from "@/components/ui/CommandPalette";
+import OnboardingTour from "@/components/ui/OnboardingTour";
+import FloatingActions from "@/components/ui/FloatingActions";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -15,7 +18,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  if (pathname === "/login") {
+  if (pathname === "/login" || pathname === "/") {
     return <ToastProvider>{children}</ToastProvider>;
   }
 
@@ -58,12 +61,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             ) : null}
           </AnimatePresence>
 
-          <main className="min-w-0 flex-1 overflow-y-auto bg-slate-950">
+          <main className="min-w-0 flex-1 overflow-y-auto bg-background">
             <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
               {children}
             </div>
           </main>
         </div>
+
+        {/* Global Overlays */}
+        <CommandPalette />
+        <OnboardingTour />
+        <FloatingActions />
       </div>
     </ToastProvider>
   );

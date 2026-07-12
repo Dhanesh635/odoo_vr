@@ -1,15 +1,44 @@
 @import "tailwindcss";
 
 :root {
-  --background: #020617;
+  --background: #09090B;
+  --surface: #18181B;
+  --elevated: #20212A;
+  --primary: #6366F1;
+  --secondary: #8B5CF6;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --border: #2A2B35;
   --foreground: #f8fafc;
+}
+
+.light {
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --elevated: #f1f5f9;
+  --primary: #4F46E5;
+  --secondary: #7C3AED;
+  --success: #059669;
+  --warning: #D97706;
+  --danger: #DC2626;
+  --border: #e2e8f0;
+  --foreground: #0f172a;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-border-theme: var(--border);
   --color-foreground: var(--foreground);
-  --font-sans: "Inter", Arial, Helvetica, sans-serif;
-  --font-mono: "Courier New", Courier, monospace;
+  --font-sans: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-geist-mono), "Courier New", Courier, monospace;
 }
 
 /* ── Base ──────────────────────────────────────────────────────────────── */

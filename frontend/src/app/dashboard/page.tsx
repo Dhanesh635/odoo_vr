@@ -26,6 +26,7 @@ import {
   type RecentTrip,
   type VehicleStatus,
 } from "@/constants/dashboard";
+import SmartInsights from "@/components/dashboard/SmartInsights";
 
 type DashboardFiltersState = Record<DashboardFilterKey, string>;
 
@@ -82,9 +83,13 @@ export default function DashboardPage() {
     <PageTransition className="space-y-6">
       <PageSection>
         <header>
-          <h1 className="text-3xl font-bold text-slate-50">Dashboard</h1>
-          <p className="mt-2 text-base text-slate-400">Fleet Overview</p>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+          <p className="mt-2 text-base text-foreground/60">Fleet Overview</p>
         </header>
+      </PageSection>
+
+      <PageSection>
+        <SmartInsights />
       </PageSection>
 
       <PageSection>
