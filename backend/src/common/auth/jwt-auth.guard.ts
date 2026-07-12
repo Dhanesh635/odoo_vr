@@ -7,6 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { AUTH_SECRET_ENV_KEY, IS_PUBLIC_KEY } from './auth.constants';
+import { AuthUser } from './auth-user.interface.js';
 import { TokenService } from './token.service';
 
 @Injectable()
@@ -26,7 +27,9 @@ export class JwtAuthGuard implements CanActivate {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request & { user?: unknown }>();
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { user?: AuthUser }>();
     const token = this.getBearerToken(request);
 
     request.user = this.tokenService.verify(

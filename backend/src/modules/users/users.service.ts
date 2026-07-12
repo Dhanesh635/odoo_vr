@@ -74,8 +74,7 @@ export class UsersService {
   private buildAuthResponse(user: User) {
     const sanitizedUser = this.sanitizeUser(user);
     const token = this.signAuthToken({
-      sub: String(user._id),
-      name: user.name,
+      id: String(user._id),
       email: user.email,
       role: user.role,
     });
@@ -110,8 +109,7 @@ export class UsersService {
   }
 
   private signAuthToken(payload: {
-    sub: string;
-    name: string;
+    id: string;
     email: string;
     role: UserRole;
   }) {

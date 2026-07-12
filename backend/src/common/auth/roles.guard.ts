@@ -7,7 +7,12 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
-import { AUTH_SECRET_ENV_KEY, IS_PUBLIC_KEY, ROLES_KEY } from './auth.constants';
+import {
+  AUTH_SECRET_ENV_KEY,
+  IS_PUBLIC_KEY,
+  ROLES_KEY,
+} from './auth.constants';
+import { AuthUser } from './auth-user.interface.js';
 import { TokenService } from './token.service';
 
 @Injectable()
@@ -32,7 +37,9 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    const request = context.switchToHttp().getRequest<Request & { user?: { role?: string } }>();
+    const request = context
+      .switchToHttp()
+      .getRequest<Request & { user?: AuthUser }>();
     const user = request.user ?? this.authenticateFromHeader(request);
 
     if (!allowedRoles?.length) {
@@ -49,7 +56,7 @@ export class RolesGuard implements CanActivate {
     return true;
   }
 
-  private authenticateFromHeader(request: Request): { role?: string } {
+  private authenticateFromHeader(request: Request): AuthUser {
     const header = request.headers.authorization;
 
     if (!header?.startsWith('Bearer ')) {

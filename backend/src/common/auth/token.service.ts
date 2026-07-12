@@ -2,8 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { createHmac } from 'crypto';
 
 export interface AuthTokenPayload {
-  sub: string;
-  name: string;
+  id: string;
   email: string;
   role: string;
 }
@@ -45,7 +44,7 @@ export class TokenService {
       Buffer.from(encodedPayload, 'base64url').toString('utf8'),
     ) as AuthTokenPayload;
 
-    if (!payload.sub || !payload.email || !payload.role || !payload.name) {
+    if (!payload.id || !payload.email || !payload.role) {
       throw new Error('Invalid token payload');
     }
 

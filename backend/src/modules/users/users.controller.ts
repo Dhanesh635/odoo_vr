@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Post, Req, SetMetadata } from '@nestjs/common';
-import { Request } from 'express';
+import { Body, Controller, Get, Post, SetMetadata } from '@nestjs/common';
+import { CurrentUser } from '../../common/auth/current-user.decorator';
 import { IS_PUBLIC_KEY } from '../../common/auth/auth.constants';
 import { UsersService } from './users.service';
 
@@ -20,7 +20,7 @@ export class UsersController {
   }
 
   @Get('me')
-  me(@Req() request: Request & { user?: { sub: string } }) {
-    return this.usersService.me(request.user?.sub ?? '');
+  me(@CurrentUser() user: { id: string }) {
+    return this.usersService.me(user.id);
   }
 }
