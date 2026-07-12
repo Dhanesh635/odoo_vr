@@ -55,7 +55,7 @@ export default function SearchBar({
         value={value}
         className={[
           "h-11 w-full rounded-lg border border-slate-700 bg-slate-900 px-10 text-sm text-slate-100 outline-none transition-colors",
-          "placeholder:text-slate-500 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20",
+          "placeholder:text-slate-500 focus-visible:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400/20",
           "disabled:cursor-not-allowed disabled:bg-slate-900/50 disabled:text-slate-500",
           className,
         ].join(" ")}
@@ -65,7 +65,7 @@ export default function SearchBar({
         <button
           type="button"
           onClick={onClear}
-          className="absolute inset-y-0 right-2 my-auto flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+          className="absolute inset-y-0 right-2 my-auto flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100 focus-ring"
           aria-label="Clear search"
         >
           <ClearIcon />

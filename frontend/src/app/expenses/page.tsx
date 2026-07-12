@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button, Card } from "@/components/ui";
+import { Button, Card, PageTransition, PageSection } from "@/components/ui";
 import CostBreakdownChart from "@/components/expenses/CostBreakdownChart";
 import {
   DeleteExpenseDialog,
@@ -305,102 +305,114 @@ export default function ExpensesPage() {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <PageTransition className="space-y-6">
       {/* Page Header */}
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-50">
-            Fuel &amp; Expense Management
-          </h1>
-          <p className="mt-2 text-base text-slate-400">
-            Track fuel usage and operational expenses across your fleet.
-          </p>
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button
-            onClick={() => setIsFuelLogModalOpen(true)}
-            leftIcon={<FuelIcon />}
-          >
-            Add Fuel Log
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() => setIsExpenseModalOpen(true)}
-            leftIcon={<PlusIcon />}
-          >
-            Add Expense
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleExportCsv}
-            leftIcon={<ExportIcon />}
-          >
-            Export CSV
-          </Button>
-        </div>
-      </header>
+      <PageSection>
+        <header className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-50">
+              Fuel &amp; Expense Management
+            </h1>
+            <p className="mt-2 text-base text-slate-400">
+              Track fuel usage and operational expenses across your fleet.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              onClick={() => setIsFuelLogModalOpen(true)}
+              leftIcon={<FuelIcon />}
+            >
+              Add Fuel Log
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setIsExpenseModalOpen(true)}
+              leftIcon={<PlusIcon />}
+            >
+              Add Expense
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleExportCsv}
+              leftIcon={<ExportIcon />}
+            >
+              Export CSV
+            </Button>
+          </div>
+        </header>
+      </PageSection>
 
       {/* Summary Cards */}
-      <ExpenseSummaryCards fuelLogs={fuelLogs} expenses={expenses} />
+      <PageSection>
+        <ExpenseSummaryCards fuelLogs={fuelLogs} expenses={expenses} />
+      </PageSection>
 
       {/* Charts */}
-      <CostBreakdownChart pieData={pieData} />
+      <PageSection>
+        <CostBreakdownChart pieData={pieData} />
+      </PageSection>
 
       {/* Vehicle Cost Cards */}
-      <section>
-        <h2 className="mb-4 text-lg font-semibold text-slate-50">
-          Vehicle Cost Overview
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {vehicleSummaries.map((summary) => (
-            <VehicleExpenseCard key={summary.vehicleId} summary={summary} />
-          ))}
-        </div>
-      </section>
+      <PageSection>
+        <section>
+          <h2 className="mb-4 text-lg font-semibold text-slate-50">
+            Vehicle Cost Overview
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {vehicleSummaries.map((summary) => (
+              <VehicleExpenseCard key={summary.vehicleId} summary={summary} />
+            ))}
+          </div>
+        </section>
+      </PageSection>
 
       {/* Filters */}
-      <Card bodyClassName="p-4">
-        <ExpenseFilters filters={filters} onChange={updateFilter} />
-      </Card>
+      <PageSection>
+        <Card bodyClassName="p-4">
+          <ExpenseFilters filters={filters} onChange={updateFilter} />
+        </Card>
+      </PageSection>
 
       {/* Tabs + tables */}
-      <Card bodyClassName="p-0">
-        {/* Tab bar */}
-        <div className="flex border-b border-slate-800">
-          <TabButton
-            active={activeTab === "fuel"}
-            onClick={() => setActiveTab("fuel")}
-            count={visibleFuelLogs.length}
-          >
-            Fuel Logs
-          </TabButton>
-          <TabButton
-            active={activeTab === "expenses"}
-            onClick={() => setActiveTab("expenses")}
-            count={visibleExpenses.length}
-          >
-            Expenses
-          </TabButton>
-        </div>
+      <PageSection>
+        <Card bodyClassName="p-0">
+          {/* Tab bar */}
+          <div className="flex border-b border-slate-800">
+            <TabButton
+              active={activeTab === "fuel"}
+              onClick={() => setActiveTab("fuel")}
+              count={visibleFuelLogs.length}
+            >
+              Fuel Logs
+            </TabButton>
+            <TabButton
+              active={activeTab === "expenses"}
+              onClick={() => setActiveTab("expenses")}
+              count={visibleExpenses.length}
+            >
+              Expenses
+            </TabButton>
+          </div>
 
-        <div className="p-4 md:p-5">
-          {activeTab === "fuel" ? (
-            <FuelLogTable
-              logs={visibleFuelLogs}
-              onAdd={() => setIsFuelLogModalOpen(true)}
-              onView={(l) => setDrawerItem({ kind: "fuel", data: l })}
-              onDelete={setFuelLogPendingDelete}
-            />
-          ) : (
-            <ExpenseTable
-              expenses={visibleExpenses}
-              onAdd={() => setIsExpenseModalOpen(true)}
-              onView={(e) => setDrawerItem({ kind: "expense", data: e })}
-              onDelete={setExpensePendingDelete}
-            />
-          )}
-        </div>
-      </Card>
+          <div className="p-4 md:p-5">
+            {activeTab === "fuel" ? (
+              <FuelLogTable
+                logs={visibleFuelLogs}
+                onAdd={() => setIsFuelLogModalOpen(true)}
+                onView={(l) => setDrawerItem({ kind: "fuel", data: l })}
+                onDelete={setFuelLogPendingDelete}
+              />
+            ) : (
+              <ExpenseTable
+                expenses={visibleExpenses}
+                onAdd={() => setIsExpenseModalOpen(true)}
+                onView={(e) => setDrawerItem({ kind: "expense", data: e })}
+                onDelete={setExpensePendingDelete}
+              />
+            )}
+          </div>
+        </Card>
+      </PageSection>
 
       {/* Modals */}
       <FuelLogModal
@@ -431,7 +443,7 @@ export default function ExpensesPage() {
         onCancel={() => setExpensePendingDelete(null)}
         onConfirm={handleDeleteExpenseConfirm}
       />
-    </div>
+    </PageTransition>
   );
 }
 

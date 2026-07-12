@@ -1,10 +1,14 @@
-import { ButtonHTMLAttributes, ReactNode } from "react";
+"use client";
+
+import { ReactNode } from "react";
+import { motion, HTMLMotionProps } from "framer-motion";
 import LoadingSpinner from "./LoadingSpinner";
 
 type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "ghost";
 type ButtonSize = "sm" | "md" | "lg";
 
-type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
+type ButtonProps = Omit<HTMLMotionProps<"button">, "children"> & {
+  children?: ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
   isLoading?: boolean;
@@ -46,9 +50,12 @@ export default function Button({
   const isDisabled = disabled || isLoading;
 
   return (
-    <button
+    <motion.button
       type={type}
       disabled={isDisabled}
+      whileHover={isDisabled ? undefined : { scale: 1.02 }}
+      whileTap={isDisabled ? undefined : { scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 400, damping: 20 }}
       className={[
         "inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
@@ -62,7 +69,7 @@ export default function Button({
       {isLoading ? <LoadingSpinner size="sm" /> : leftIcon}
       <span>{children}</span>
       {!isLoading ? rightIcon : null}
-    </button>
+    </motion.button>
   );
 }
 

@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { Badge } from "@/components/ui";
 import TripTimeline from "./TripTimeline";
 import TripStatusStepper from "./TripStatusStepper";
+import { motion, AnimatePresence } from "framer-motion";
+import { slideInRight } from "@/lib/motion";
 import type { Trip, TripStatus } from "@/types/trip";
 
 type TripDetailsDrawerProps = {
@@ -45,27 +47,37 @@ export default function TripDetailsDrawer({ onClose, trip }: TripDetailsDrawerPr
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [trip, onClose]);
 
-  if (!trip) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex justify-end"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="trip-drawer-title"
-    >
-      {/* Backdrop */}
-      <button
-        type="button"
-        className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
-        onClick={onClose}
-        aria-label="Close trip details"
-      />
+    <AnimatePresence>
+      {trip ? (
+        <div
+          className="fixed inset-0 z-50 flex justify-end"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="trip-drawer-title"
+        >
+          {/* Backdrop */}
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            type="button"
+            className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+            onClick={onClose}
+            aria-label="Close trip details"
+          />
 
-      {/* Panel */}
-      <aside className="relative z-10 flex h-full w-full max-w-lg flex-col border-l border-slate-800 bg-slate-900 shadow-2xl shadow-black/50">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+          {/* Panel */}
+          <motion.aside
+            variants={slideInRight}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="relative z-10 flex h-full w-full max-w-lg flex-col border-l border-slate-800 bg-slate-900 shadow-2xl shadow-black/50"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
               Trip Details
@@ -80,7 +92,7 @@ export default function TripDetailsDrawer({ onClose, trip }: TripDetailsDrawerPr
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100 focus-ring"
             aria-label="Close trip details"
           >
             <CloseIcon />
@@ -201,8 +213,10 @@ export default function TripDetailsDrawer({ onClose, trip }: TripDetailsDrawerPr
             <TripTimeline events={trip.timeline} />
           </section>
         </div>
-      </aside>
+      </motion.aside>
     </div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 

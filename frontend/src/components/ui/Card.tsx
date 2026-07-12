@@ -1,4 +1,7 @@
+"use client";
+
 import { ReactNode } from "react";
+import { motion } from "framer-motion";
 
 type CardProps = {
   title?: ReactNode;
@@ -22,9 +25,13 @@ export default function Card({
   const hasHeader = Boolean(title || subtitle || actions);
 
   return (
-    <section
+    <motion.section
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
       className={[
-        "rounded-xl border border-slate-800 bg-slate-900/70 shadow-sm shadow-black/20",
+        "rounded-xl border border-slate-800 bg-slate-900/70 shadow-sm shadow-black/20 transition-[border-color,box-shadow] duration-200",
+        "hover:border-slate-700/80 hover:shadow-md hover:shadow-black/30",
         className,
       ].join(" ")}
     >
@@ -47,7 +54,7 @@ export default function Card({
       {footer ? (
         <div className="border-t border-slate-800 px-5 py-4">{footer}</div>
       ) : null}
-    </section>
+    </motion.section>
   );
 }
 

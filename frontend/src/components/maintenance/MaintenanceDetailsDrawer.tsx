@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import MaintenanceStatusBadge from "./MaintenanceStatusBadge";
 import MaintenanceTimeline from "./MaintenanceTimeline";
+import { motion, AnimatePresence } from "framer-motion";
+import { slideInRight } from "@/lib/motion";
 import type { MaintenanceRecord } from "@/types/maintenance";
 
 type MaintenanceDetailsDrawerProps = {
@@ -50,27 +52,37 @@ export default function MaintenanceDetailsDrawer({
     return () => document.removeEventListener("keydown", onKey);
   }, [record, onClose]);
 
-  if (!record) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex justify-end"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="maint-drawer-title"
-    >
-      {/* Backdrop */}
-      <button
-        type="button"
-        className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
-        onClick={onClose}
-        aria-label="Close maintenance details"
-      />
+    <AnimatePresence>
+      {record ? (
+        <div
+          className="fixed inset-0 z-50 flex justify-end"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="maint-drawer-title"
+        >
+          {/* Backdrop */}
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            type="button"
+            className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+            onClick={onClose}
+            aria-label="Close maintenance details"
+          />
 
-      {/* Panel */}
-      <aside className="relative z-10 flex h-full w-full max-w-lg flex-col border-l border-slate-800 bg-slate-900 shadow-2xl shadow-black/50">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+          {/* Panel */}
+          <motion.aside
+            variants={slideInRight}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="relative z-10 flex h-full w-full max-w-lg flex-col border-l border-slate-800 bg-slate-900 shadow-2xl shadow-black/50"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-orange-300">
               Maintenance Details
@@ -85,7 +97,7 @@ export default function MaintenanceDetailsDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100 focus-ring"
             aria-label="Close"
           >
             <CloseIcon />
@@ -203,8 +215,10 @@ export default function MaintenanceDetailsDrawer({
             <MaintenanceTimeline events={record.timeline} />
           </section>
         </div>
-      </aside>
+      </motion.aside>
     </div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 

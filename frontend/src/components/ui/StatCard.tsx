@@ -1,4 +1,7 @@
+"use client";
+
 import { ReactNode } from "react";
+import { motion } from "framer-motion";
 
 type StatCardColor =
   | "amber"
@@ -41,9 +44,11 @@ export default function StatCard({
   value,
 }: StatCardProps) {
   return (
-    <article
+    <motion.article
+      whileHover={{ y: -4, transition: { type: "spring", stiffness: 300, damping: 20 } }}
       className={[
         "rounded-xl border border-slate-800 bg-slate-900/70 p-5 shadow-sm shadow-black/20",
+        "transition-[border-color,box-shadow] duration-200 hover:border-slate-700/80 hover:shadow-lg hover:shadow-black/30",
         className,
       ].join(" ")}
     >
@@ -62,7 +67,7 @@ export default function StatCard({
         </div>
       </div>
       {trend ? <div className="mt-4 text-sm text-slate-300">{trend}</div> : null}
-    </article>
+    </motion.article>
   );
 }
 

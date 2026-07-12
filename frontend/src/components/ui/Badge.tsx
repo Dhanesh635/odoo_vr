@@ -28,15 +28,26 @@ const statusClasses: Record<BadgeStatus, string> = {
   Draft: "border-slate-500/30 bg-slate-500/10 text-slate-300",
 };
 
+/** Statuses that show a pulse dot to indicate active/pending state */
+const pulseStatuses = new Set<BadgeStatus>(["On Trip", "Pending", "In Shop"]);
+
 export default function Badge({ className = "", status }: BadgeProps) {
+  const hasPulse = pulseStatuses.has(status);
+
   return (
     <span
       className={[
-        "inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
+        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold",
         statusClasses[status],
         className,
       ].join(" ")}
     >
+      {hasPulse ? (
+        <span
+          className="h-1.5 w-1.5 rounded-full bg-current animate-[pulse-dot_2s_ease-in-out_infinite]"
+          aria-hidden="true"
+        />
+      ) : null}
       {status}
     </span>
   );

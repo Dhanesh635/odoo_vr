@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import EmptyState from "./EmptyState";
-import LoadingSpinner from "./LoadingSpinner";
+import { TableSkeleton } from "./Skeleton";
 
 type TableColumn<TData> = {
   key: string;
@@ -41,77 +41,77 @@ export default function Table<TData>({
         className,
       ].join(" ")}
     >
-      <div className="max-w-full overflow-x-auto">
-        <table className="min-w-full divide-y divide-slate-800">
-          <thead className="sticky top-0 z-10 bg-slate-900">
-            <tr>
-              {columns.map((column) => (
-                <th
-                  key={column.key}
-                  scope="col"
-                  className={[
-                    "whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-400",
-                    column.headerClassName ?? "",
-                  ].join(" ")}
-                >
-                  {column.header}
-                </th>
-              ))}
-              {actions ? (
-                <th
-                  scope="col"
-                  className="whitespace-nowrap px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-400"
-                >
-                  Actions
-                </th>
-              ) : null}
-            </tr>
-          </thead>
+      {/* Skeleton loading state */}
+      {isLoading ? (
+        <TableSkeleton rows={5} cols={columns.length + (actions ? 1 : 0)} />
+      ) : null}
 
-          <tbody className="divide-y divide-slate-800">
-            {isLoading ? (
+      {/* Table content */}
+      {!isLoading ? (
+        <div className="max-w-full overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-800">
+            <thead className="sticky top-0 z-10 bg-slate-900/95 backdrop-blur-sm">
               <tr>
-                <td
-                  colSpan={columns.length + (actions ? 1 : 0)}
-                  className="px-4 py-12 text-center"
-                >
-                  <LoadingSpinner size="md" />
-                </td>
-              </tr>
-            ) : null}
-
-            {!isLoading && hasRows
-              ? data.map((row, rowIndex) => (
-                  <tr
-                    key={getRowKey(row, rowIndex)}
-                    className="transition-colors hover:bg-slate-800/50"
+                {columns.map((column) => (
+                  <th
+                    key={column.key}
+                    scope="col"
+                    className={[
+                      "whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-400",
+                      column.headerClassName ?? "",
+                    ].join(" ")}
                   >
-                    {columns.map((column) => (
-                      <td
-                        key={column.key}
-                        className={[
-                          "whitespace-nowrap px-4 py-3 text-sm text-slate-200",
-                          column.className ?? "",
-                        ].join(" ")}
-                      >
-                        {column.render
-                          ? column.render(row, rowIndex)
-                          : column.accessor
-                            ? String(row[column.accessor] ?? "")
-                            : null}
-                      </td>
-                    ))}
-                    {actions ? (
-                      <td className="whitespace-nowrap px-4 py-3 text-right text-sm">
-                        {actions(row, rowIndex)}
-                      </td>
-                    ) : null}
-                  </tr>
-                ))
-              : null}
-          </tbody>
-        </table>
-      </div>
+                    {column.header}
+                  </th>
+                ))}
+                {actions ? (
+                  <th
+                    scope="col"
+                    className="whitespace-nowrap px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-400"
+                  >
+                    Actions
+                  </th>
+                ) : null}
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-slate-800/60">
+              {hasRows
+                ? data.map((row, rowIndex) => (
+                    <tr
+                      key={getRowKey(row, rowIndex)}
+                      className={[
+                        "transition-colors duration-150 hover:bg-slate-800/50",
+                        rowIndex % 2 === 1 ? "bg-slate-900/40" : "",
+                      ].join(" ")}
+                    >
+                      {columns.map((column) => (
+                        <td
+                          key={column.key}
+                          className={[
+                            "whitespace-nowrap px-4 py-3 text-sm text-slate-200",
+                            column.className ?? "",
+                          ].join(" ")}
+                        >
+                          {column.render
+                            ? column.render(row, rowIndex)
+                            : column.accessor
+                              ? String(row[column.accessor] ?? "")
+                              : null}
+                        </td>
+                      ))}
+                      {actions ? (
+                        <td className="whitespace-nowrap px-4 py-3 text-right text-sm">
+                          {actions(row, rowIndex)}
+                        </td>
+                      ) : null}
+                    </tr>
+                  ))
+                : null}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
 
       {!isLoading && !hasRows ? (
         <div className="border-t border-slate-800 p-4">

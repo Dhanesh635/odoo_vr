@@ -70,7 +70,7 @@ export default function Input({
           aria-describedby={hasError ? `${inputId}-error` : undefined}
           className={[
             "h-11 w-full rounded-lg border bg-slate-900 px-3 text-sm text-slate-100 outline-none transition-colors",
-            "placeholder:text-slate-500 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20",
+            "placeholder:text-slate-500 focus-visible:border-amber-400 focus-visible:ring-2 focus-visible:ring-amber-400/20",
             "disabled:cursor-not-allowed disabled:bg-slate-900/50 disabled:text-slate-500",
             leadingIcon ? "pl-10" : "",
             rightIcon ? "pr-10" : "",

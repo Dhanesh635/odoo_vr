@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import type { Expense, ExpenseType, FuelLog } from "@/types/expense";
+import { motion, AnimatePresence } from "framer-motion";
+import { slideInRight } from "@/lib/motion";
 
 // ─── Union type for both drawer item types ─────────────────────────────────────
 
@@ -49,30 +51,37 @@ export default function ExpenseDetailsDrawer({
     return () => document.removeEventListener("keydown", onKey);
   }, [item, onClose]);
 
-  if (!item) return null;
-
-  const title =
-    item.kind === "fuel"
-      ? `${item.data.fuelLogId} — ${item.data.vehicleName}`
-      : `${item.data.expenseId} — ${item.data.vehicleName}`;
+  const title = item ? (item.kind === "fuel" ? item.data.fuelLogId : item.data.expenseId) : "";
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex justify-end"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="expense-drawer-title"
-    >
-      <button
-        type="button"
-        className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
-        onClick={onClose}
-        aria-label="Close details"
-      />
+    <AnimatePresence>
+      {item ? (
+        <div
+          className="fixed inset-0 z-50 flex justify-end"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="expense-drawer-title"
+        >
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            type="button"
+            className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
+            onClick={onClose}
+            aria-label="Close details"
+          />
 
-      <aside className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-slate-800 bg-slate-900 shadow-2xl shadow-black/50">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+          <motion.aside
+            variants={slideInRight}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-slate-800 bg-slate-900 shadow-2xl shadow-black/50"
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-amber-300">
               {item.kind === "fuel" ? "Fuel Log Details" : "Expense Details"}
@@ -87,7 +96,7 @@ export default function ExpenseDetailsDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100"
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-800 hover:text-slate-100 focus-ring"
             aria-label="Close"
           >
             <CloseIcon />
@@ -102,8 +111,10 @@ export default function ExpenseDetailsDrawer({
             <ExpenseDetails expense={item.data} />
           )}
         </div>
-      </aside>
+      </motion.aside>
     </div>
+      ) : null}
+    </AnimatePresence>
   );
 }
 

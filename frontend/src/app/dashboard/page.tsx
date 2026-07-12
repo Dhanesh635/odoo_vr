@@ -9,6 +9,8 @@ import {
   Select,
   StatCard,
   Table,
+  PageTransition,
+  PageSection,
   type TableColumn,
 } from "@/components/ui";
 import {
@@ -77,108 +79,116 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header>
-        <h1 className="text-3xl font-bold text-slate-50">Dashboard</h1>
-        <p className="mt-2 text-base text-slate-400">Fleet Overview</p>
-      </header>
+    <PageTransition className="space-y-6">
+      <PageSection>
+        <header>
+          <h1 className="text-3xl font-bold text-slate-50">Dashboard</h1>
+          <p className="mt-2 text-base text-slate-400">Fleet Overview</p>
+        </header>
+      </PageSection>
 
-      <Card bodyClassName="p-4">
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[repeat(3,minmax(0,1fr))_minmax(280px,1.4fr)]">
-          {dashboardFilters.map((filter) => (
-            <Select
-              key={filter.key}
-              label={filter.label}
-              placeholder={filter.placeholder}
-              value={filters[filter.key]}
-              options={filter.options}
-              onChange={(event) => updateFilter(filter.key, event.target.value)}
+      <PageSection>
+        <Card bodyClassName="p-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-[repeat(3,minmax(0,1fr))_minmax(280px,1.4fr)]">
+            {dashboardFilters.map((filter) => (
+              <Select
+                key={filter.key}
+                label={filter.label}
+                placeholder={filter.placeholder}
+                value={filters[filter.key]}
+                options={filter.options}
+                onChange={(event) => updateFilter(filter.key, event.target.value)}
+              />
+            ))}
+            <div className="md:col-span-2 xl:col-span-1">
+              <label className="mb-2 block text-sm font-medium text-slate-200">
+                Search
+              </label>
+              <SearchBar
+                placeholder="Search trips or vehicles"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                onClear={() => setSearchQuery("")}
+              />
+            </div>
+          </div>
+        </Card>
+      </PageSection>
+
+      <PageSection>
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {dashboardStats.map((stat) => (
+            <StatCard
+              key={stat.title}
+              title={stat.title}
+              value={stat.value}
+              icon={<DashboardIcon name={stat.icon} />}
+              color={stat.color}
+              className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
             />
           ))}
-          <div className="md:col-span-2 xl:col-span-1">
-            <label className="mb-2 block text-sm font-medium text-slate-200">
-              Search
-            </label>
-            <SearchBar
-              placeholder="Search trips or vehicles"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              onClear={() => setSearchQuery("")}
-            />
+        </section>
+      </PageSection>
+
+      <PageSection>
+        <section className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+          <div className="space-y-6">
+            <Card
+              title="Recent Trips"
+              subtitle="Latest fleet movements and dispatch activity"
+              bodyClassName="p-0"
+            >
+              <Table
+                columns={tripColumns}
+                data={filteredTrips}
+                getRowKey={(trip) => trip.tripId}
+                emptyTitle="No trips match your filters"
+                emptyDescription="Adjust filters or search terms to view recent trip activity."
+                className="rounded-none border-0 bg-transparent"
+              />
+            </Card>
+
+            <Card title="Vehicle Status Overview" subtitle="Current fleet distribution">
+              <div className="space-y-5">
+                {vehicleStatusOverview.map((status) => (
+                  <VehicleStatusBar key={status.label} status={status} />
+                ))}
+              </div>
+            </Card>
           </div>
-        </div>
-      </Card>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {dashboardStats.map((stat) => (
-          <StatCard
-            key={stat.title}
-            title={stat.title}
-            value={stat.value}
-            icon={<DashboardIcon name={stat.icon} />}
-            color={stat.color}
-            className="transition duration-200 hover:-translate-y-1 hover:border-amber-500/30 hover:shadow-lg hover:shadow-black/30"
-          />
-        ))}
-      </section>
+          <aside className="space-y-6">
+            <Card title="Recent Activity" subtitle="Operational timeline">
+              <div className="space-y-4">
+                {recentActivity.map((activity, index) => (
+                  <ActivityItem
+                    key={activity.title}
+                    activity={activity}
+                    isLast={index === recentActivity.length - 1}
+                  />
+                ))}
+              </div>
+            </Card>
 
-      <section className="grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-        <div className="space-y-6">
-          <Card
-            title="Recent Trips"
-            subtitle="Latest fleet movements and dispatch activity"
-            bodyClassName="p-0"
-          >
-            <Table
-              columns={tripColumns}
-              data={filteredTrips}
-              getRowKey={(trip) => trip.tripId}
-              emptyTitle="No trips match your filters"
-              emptyDescription="Adjust filters or search terms to view recent trip activity."
-              className="rounded-none border-0 bg-transparent"
-            />
-          </Card>
-
-          <Card title="Vehicle Status Overview" subtitle="Current fleet distribution">
-            <div className="space-y-5">
-              {vehicleStatusOverview.map((status) => (
-                <VehicleStatusBar key={status.label} status={status} />
-              ))}
-            </div>
-          </Card>
-        </div>
-
-        <aside className="space-y-6">
-          <Card title="Recent Activity" subtitle="Operational timeline">
-            <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <ActivityItem
-                  key={activity.title}
-                  activity={activity}
-                  isLast={index === recentActivity.length - 1}
-                />
-              ))}
-            </div>
-          </Card>
-
-          <Card title="Quick Actions" subtitle="Common transport workflows">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              {quickActions.map((action) => (
-                <Button
-                  key={action.label}
-                  type="button"
-                  variant="secondary"
-                  className="justify-start border border-slate-800 bg-slate-950/60 hover:border-amber-500/40 hover:bg-slate-800"
-                  leftIcon={<PlusIcon />}
-                >
-                  {action.label}
-                </Button>
-              ))}
-            </div>
-          </Card>
-        </aside>
-      </section>
-    </div>
+            <Card title="Quick Actions" subtitle="Common transport workflows">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                {quickActions.map((action) => (
+                  <Button
+                    key={action.label}
+                    type="button"
+                    variant="secondary"
+                    className="justify-start border border-slate-800 bg-slate-950/60 hover:border-amber-500/40 hover:bg-slate-800"
+                    leftIcon={<PlusIcon />}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
+            </Card>
+          </aside>
+        </section>
+      </PageSection>
+    </PageTransition>
   );
 }
 
